@@ -1,5 +1,12 @@
-# GitOps-with-ArgoCD Setup
-# 1. System Update & Prerequisites
+# 🚀 GitOps with ArgoCD Setup
+
+This guide will help you set up GitOps with ArgoCD step by step.
+
+---
+
+## 1. System Update & Prerequisites
+
+```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
 
@@ -9,7 +16,7 @@ sudo systemctl enable docker
 sudo systemctl start docker
 sudo usermod -aG docker $USER
 newgrp docker
-# 2. Install KIND (Kubernetes in Docker)
+
 # Download and install KIND
 curl -Lo kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
 chmod +x kind
@@ -18,7 +25,7 @@ kind --version
 
 # Create Kubernetes cluster
 kind create cluster
-# 3. Install kubectl
+
 # Download and install kubectl
 curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
 chmod +x kubectl
@@ -27,7 +34,16 @@ kubectl version --client
 
 # Verify cluster
 kubectl get nodes
-# 4. Install ArgoCD
+
+# Download and install kubectl
+curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version --client
+
+# Verify cluster
+kubectl get nodes
+
 # Create ArgoCD namespace
 kubectl create namespace argocd
 
@@ -36,27 +52,20 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 # Wait for pods to be ready
 kubectl get pods -n argocd --watch
-# 5. Access ArgoCD
+
 # Get initial admin password
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d && echo
 
 # Port forward to access ArgoCD UI
 kubectl port-forward svc/argocd-server -n argocd 8080:443
-# Access ArgoCD UI: Open browser and go to https://localhost:8080
 
-# Username: admin
-
-# Password: admin5911
-# 6. Set Up Git Repository
-# Configure git (if not done)
+# Configure git
 git config --global user.email "your-email@example.com"
 git config --global user.name "Your Name"
 
-# Clone your repository (replace with your actual repo)
+# Clone your repository
 git clone https://github.com/your-username/gitops-demo.git
 cd gitops-demo
-# 7. Create Application Manifests
-# Create nginx-app/nginx-deployment.yaml:
 
 apiVersion: apps/v1
 kind: Deployment
@@ -79,8 +88,6 @@ spec:
         ports:
         - containerPort: 80
 
-# Create nginx-app/nginx-service.yaml:
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -94,13 +101,9 @@ spec:
     targetPort: 80
   type: ClusterIP
 
-# 8. Push to Git Repository
 git add nginx-app/
 git commit -m "Add nginx deployment and service manifests"
 git push origin main
-
-# 9. Create ArgoCD Application
-# Create argo-app.yaml:
 
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -121,11 +124,7 @@ spec:
       prune: true
       selfHeal: true
 
-  # Apply the application:
-
 kubectl apply -f argo-app.yaml -n argocd
-
-# 10. Verify Deployment
 
 # Check application status in ArgoCD
 kubectl get applications -n argocd
@@ -135,3 +134,4 @@ kubectl get all -n default
 
 # Access the application
 kubectl port-forward svc/nginx-service 8081:80 -n default
+
